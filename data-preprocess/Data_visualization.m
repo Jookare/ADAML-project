@@ -28,13 +28,15 @@ clear Train Test RUL Train_out Valid_out Test_out i
 %% Visualize train, valid and test data in 3 by 4 grid for easy comparison
 figure;
 types = {'Train', 'Valid', 'Test'};
+% types = {'Train'};
 num_datasets = length(Data);
 num_types = length(types);
 
-for k = 1:3
+for k = 1:length(types)
     type = types{k};
     for i = 1:4
         subplot(num_types, num_datasets, (k-1)*num_datasets + i);
+        % figure
         data = Data(i).(type).data;
         vars = Data(i).(type).vars;
     
@@ -43,3 +45,15 @@ for k = 1:3
         title(type+" FD00"+num2str(i)+" (normalized)")
     end
 end
+
+%% Visualize the unit 50 of train
+close all
+
+data = Data(1).Train.data;
+vars = Data(1).Train.vars;
+
+
+unit = data(ismember(data(:, 1), 50), :);
+
+% Do not plot the unit or RUL
+plot(unit(:, 3:end))

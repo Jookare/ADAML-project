@@ -20,21 +20,10 @@ X_test  = Test(:, 6:26);
 X_valid = normalize(X_valid, 'center', mu, 'scale', sigma);
 X_test = normalize(X_test, 'center', mu, 'scale', sigma);
 
-% Check for NaN values
-train_nan = sum(isnan(X_train)) > 0;
-valid_nan = sum(isnan(X_valid)) > 0;
-test_nan = sum(isnan(X_test)) > 0;
-
-% Find columns with ~0 standard deviation
-threshold = 1e-10;
-train_chk = std(X_train) < threshold;
-valid_chk = std(X_valid) <threshold;
-test_chk = std(X_test) < threshold;
-
-% Combine two masks 
-train_mask = train_nan | train_chk;
-valid_mask = valid_nan | valid_chk;
-test_mask = test_nan | test_chk;
+% Find mask for NaN values or 0 std
+train_mask = create_mask(X_train);
+valid_mask = create_mask(X_valid);
+test_mask = create_mask(X_test);
 
 % Remove those variables
 X_train2 = X_train(:, ~train_mask);
@@ -76,6 +65,14 @@ Test.data = Test_data;
 Test.vars = Test_vars;
 end
 
+function mask = create_mask(data)
+
+    threshold = 1e-10;
+    nan_mask = sum(isnan(data)) > 0;
+    th_mask = std(data) < threshold;
+
+    mask = nan_mask | th_mask;
+end
 
 
 function RUL_col = compute_RUL(data, RUL)
