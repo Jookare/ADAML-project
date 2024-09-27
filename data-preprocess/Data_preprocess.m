@@ -1,43 +1,30 @@
-function [Train, Valid, Test] = Data_preprocess(Train, Test, RUL)
+function [Train, Test] = Data_preprocess(Train, Test, RUL)
 %DATA_PREPROCESS Takes data as input and preprocesses the data
 %   Detailed explanation goes here
 
-% Take 20% randomly from Train as validation
-num_units = max(Train(:, 1));
-num_valid = floor(num_units*0.2);
-valid_idx = randperm(num_units, num_valid);
-valid_data = Train(ismember(Train(:, 1), valid_idx), :);
-train_data = Train(~ismember(Train(:, 1), valid_idx), :);
-
-% First five are not sensors so normalize the sensor data
-X_train = train_data(:, 6:26);
-X_valid = valid_data(:, 6:26);
+% First five are not sensors so remove
+X_train = Train(:, 6:26);
 X_test  = Test(:, 6:26);
 
 [X_train, mu, sigma] = zscore(X_train);
 
-% Normalize the validation and testing data with same mean and sigma
-X_valid = normalize(X_valid, 'center', mu, 'scale', sigma);
+% Normalize the testing data with same mean and sigma
 X_test = normalize(X_test, 'center', mu, 'scale', sigma);
 
 % Find mask for NaN values or 0 std
 train_mask = create_mask(X_train);
-valid_mask = create_mask(X_valid);
 test_mask = create_mask(X_test);
 
 % Remove those variables
 X_train2 = X_train(:, ~train_mask);
-X_valid2 = X_valid(:, ~valid_mask);
 X_test2 = X_test(:, ~test_mask);
 
 % Computes the RUL for each measurement row
-RUL_train = compute_RUL(train_data);
-RUL_valid = compute_RUL(valid_data);
+RUL_train = compute_RUL(Train);
 RUL_test = compute_RUL(Test, RUL);
 
 % Add Unit and RUL to the array.
-Train_data = cat(2, train_data(:,1), RUL_train, X_train2);
-Valid_data = cat(2, valid_data(:,1), RUL_valid, X_valid2);
+Train_data = cat(2, Train(:,1), RUL_train, X_train2);
 Test_data = cat(2, Test(:,1), RUL_test, X_test2);
 
 % Return variables for each data
@@ -48,7 +35,6 @@ end
 
 % Find the Columns that are left
 Train_vars = ['Unit', 'RUL', Sensors(~train_mask)];
-Valid_vars = ['Unit', 'RUL', Sensors(~valid_mask)];
 Test_vars = ['Unit', 'RUL', Sensors(~test_mask)];
 
 % Clear variables for struct
@@ -57,9 +43,6 @@ clear Train Valid Test
 % Save the outputs to a struct
 Train.data = Train_data;
 Train.vars = Train_vars;
-
-Valid.data = Valid_data;
-Valid.vars = Valid_vars;
 
 Test.data = Test_data;
 Test.vars = Test_vars;
@@ -70,8 +53,12 @@ function mask = create_mask(data)
     threshold = 1e-10;
     nan_mask = sum(isnan(data)) > 0;
     th_mask = std(data) < threshold;
+    uniq_mask = zeros(1, size(data, 2));
+    for i = 1:size(data, 2)
+        uniq_mask(i) = length(unique(data(:, i))) < 10;
+    end
 
-    mask = nan_mask | th_mask;
+    mask = nan_mask | th_mask | uniq_mask;
 end
 
 

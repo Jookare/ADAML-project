@@ -14,21 +14,19 @@ for i = 1:4
     RUL = readmatrix("data/RUL_FD00" + num2str(i) + ".txt");
 
     % Preprocess data
-    [Train_out, Valid_out, Test_out] = Data_preprocess(Train, Test, RUL);
+    [Train_out, Test_out] = Data_preprocess(Train, Test, RUL);
     
     % Store in structure
     Data(i).Train = Train_out;
-    Data(i).Valid = Valid_out;
     Data(i).Test = Test_out;
 end
 
 % Remove unncessary variables
-clear Train Test RUL Train_out Valid_out Test_out i
+% clear Train Test RUL Train_out Valid_out Test_out i
 
-%% Visualize train, valid and test data in 3 by 4 grid for easy comparison
+%% Visualize train and test data in 2 by 4 grid for easy comparison
 figure;
-types = {'Train', 'Valid', 'Test'};
-% types = {'Train'};
+types = {'Train', 'Test'};
 num_datasets = length(Data);
 num_types = length(types);
 
@@ -45,15 +43,40 @@ for k = 1:length(types)
         title(type+" FD00"+num2str(i)+" (normalized)")
     end
 end
-
-%% Visualize the unit 50 of train
+%% Plot same thing separately
 close all
+type = 'Train';
 
-data = Data(1).Train.data;
-vars = Data(1).Train.vars;
+for i = 1:4
+    figure
+    data = Data(i).(type).data;
+    vars = Data(i).(type).vars;
+        
+    % Do not take Unit and Time into account here
+    boxplot(data(:, 3:end), vars(3:end))
+    title(type+" FD00"+num2str(i)+" (normalized)")
+end
+%% Analyze the sensors with very low variance
+close all
+vars = Data(3).(type).vars;
+data = Data(3).(type).data;
+idx = vars == "Sensor 13";
+
+figure; hold on
+unit_i = data(:,1) == 10;
+plot(data(unit_i, idx))
+
+%% Visualize raw data for report
+close all
+Train = readmatrix("data/train_FD004.txt");
 
 
-unit = data(ismember(data(:, 1), 50), :);
-
-% Do not plot the unit or RUL
-plot(unit(:, 3:end))
+% Take data for unit 50
+data = Train(Train(:,1) == 50, 6:end);
+% plot few sensors
+for k = [1, 7, 9]
+    figure
+    plot(data(:, k))
+    xlabel("Time (cycles)")
+    ylabel("measurement")
+end

@@ -4,28 +4,28 @@ Data set: FD004
 Train trjectories: 248 -> 249
 Test trajectories: 249 -> 248
 26)	sensor measurement  26 -> 22
-
 # # # # # # # # # # # # # #
+
 Data Set: FD001
-Train trjectories: 100
+Train trajectories: 100
 Test trajectories: 100
 Conditions: ONE (Sea Level)
 Fault Modes: ONE (HPC Degradation)
 
 Data Set: FD002
-Train trjectories: 260
+Train trajectories: 260
 Test trajectories: 259
 Conditions: SIX 
 Fault Modes: ONE (HPC Degradation)
 
 Data Set: FD003
-Train trjectories: 100
+Train trajectories: 100
 Test trajectories: 100
 Conditions: ONE (Sea Level)
 Fault Modes: TWO (HPC Degradation, Fan Degradation)
 
 Data Set: FD004
-Train trjectories: 249
+Train trajectories: 249
 Test trajectories: 248
 Conditions: SIX 
 Fault Modes: TWO (HPC Degradation, Fan Degradation)
