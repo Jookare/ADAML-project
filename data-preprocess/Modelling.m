@@ -39,7 +39,6 @@ for i = 1:N_models
     % Find how many units
     N_units = max(train_data(:, 1));
     
-    % !NOTE Here for k-fold cross-validation 
     % initialize k-fold cross-validation
     cv = cvpartition(N_units, 'KFold', k_cv);
 
@@ -83,20 +82,59 @@ for i = 1:N_models
         end
 
     end
+
+    % Plot some statistics
+    Q2_CV_PLS = mean(PLS_Q2);
+    
+    PRESS_CV_PLS = mean(PLS_press);
+    
+    RMSE_CV_PLS = mean(PLS_rmse);
+    
+    figure;
+    plot(Q2_CV_PLS);
+    xlabel("Latent Variables")
+    title("FD\_00"+num2str(i))
+    ylabel("Q^2_{CV}")
+    figure;
+    plot(RMSE_CV_PLS);
+    xlabel("Latent Variables")
+    title("FD\_00"+num2str(i))
+    ylabel("RMSE_{CV}")
+    clear PLS_Q2 PLS_press PLS_rmse
 end
 
-% Plot some statistics
-Q2_CV_PLS = mean(PLS_Q2);
 
-PRESS_CV_PLS = mean(PLS_press);
 
-RMSE_CV_PLS = mean(PLS_rmse);
+%% Barplot to analyze the variables
+close all
+
+% Chosen 
+N_PLS = 8; % Could be 2 as well
+idx = 4;
+
+vars = Data(idx).Train.vars(3:end);
+X_train = Data(idx).Train.data(:,3:end);
+Y_train = Data(idx).Train.data(:,2);
+
+% Create a PLS model for the full train data
+[~,~,~,~, betaPLS_final] = plsregress(X_train, Y_train, N_PLS);
 
 figure;
-plot(Q2_CV_PLS);
-xlabel("Latent Variables")
-ylabel("Q^2_{CV}")
+betas = [betaPLS_final(2:end)];
+bar(betas);
+legend("PLS Regression Coefficients");
+xticklabels(vars);
+
+%%
+
+[P, Q, T, U, betaPLS, varPLS, mse, stats] = plsregress(X_train, Y_train, 2);
+
+P = P ./ sqrt(sum(P.^2));
+
+Q = Q ./ sqrt(sum(Q.^2));
+
+T = T ./ sqrt(sum(T.^2));
 figure;
-plot(RMSE_CV_PLS);
-xlabel("Latent Variables")
-ylabel("RMSE_{CV}")
+b = biplot([P; Q], 'Scores', T, 'VarLabels', vars);
+xlabel("Latent Variable 1");
+ylabel("Latent Variable 2");
