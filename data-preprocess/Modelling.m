@@ -26,7 +26,7 @@ clear Train Test RUL Train_out Valid_out Test_out i
 
 
 %%
-clc; close all
+clc; %close all
 
 % Define variables
 N_models = 4;
@@ -106,7 +106,7 @@ end
 
 
 %% Barplot to analyze the variables
-close all
+%close all
 
 % Chosen 
 N_PLS = 8; % Could be 2 as well
@@ -135,6 +135,7 @@ Q = Q ./ sqrt(sum(Q.^2));
 
 T = T ./ sqrt(sum(T.^2));
 figure;
+vars
 b = biplot([P; Q], 'Scores', T, 'VarLabels', vars);
 xlabel("Latent Variable 1");
 ylabel("Latent Variable 2");
