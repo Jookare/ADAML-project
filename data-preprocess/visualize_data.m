@@ -5,25 +5,13 @@ clc
 close all 
 clearvars
 
-% Load all data to a cell array for easy manipulation
-Data = struct();
-
-for i = 1:4
-    Train = readmatrix("data/train_FD00" + num2str(i) + ".txt");
-    Test = readmatrix("data/test_FD00" + num2str(i) + ".txt");
-    RUL = readmatrix("data/RUL_FD00" + num2str(i) + ".txt");
-
-    % Preprocess data
-    [Train_out, Test_out] = Data_preprocess(Train, Test, RUL);
-    
-    % Store in structure
-    Data(i).Train = Train_out;
-    Data(i).Test = Test_out;
+Data = {};
+for engine_id = 1:4
+    data = load_data(engine_id);
+    Data(engine_id).Train = data.Train;
+    Data(engine_id).Test = data.Test;
+    Data(engine_id).varNames = data.varNames;
 end
-
-% Remove unncessary variables
-% clear Train Test RUL Train_out Valid_out Test_out i
-
 %% Visualize train and test data in 2 by 4 grid for easy comparison
 figure;
 types = {'Train', 'Test'};
@@ -35,8 +23,8 @@ for k = 1:length(types)
     for i = 1:4
         subplot(num_types, num_datasets, (k-1)*num_datasets + i);
         % figure
-        data = Data(i).(type).data;
-        vars = Data(i).(type).vars;
+        data = Data(i).(type);
+        vars = Data(i).varNames;
     
         % Do not take Unit and Time into account here
         boxplot(data(:, 3:end), vars(3:end))
@@ -49,8 +37,8 @@ type = 'Train';
 
 for i = 1:4
     figure
-    data = Data(i).(type).data;
-    vars = Data(i).(type).vars;
+    data = Data(i).(type);
+    vars = Data(i).varNames;
         
     % Do not take Unit and Time into account here
     boxplot(data(:, 3:end), vars(3:end))
@@ -58,8 +46,9 @@ for i = 1:4
 end
 %% Analyze the sensors with very low variance
 close all
-vars = Data(3).(type).vars;
-data = Data(3).(type).data;
+engine_id = 3;
+vars = Data(engine_id).varNames;
+data = Data(engine_id).(type);
 idx = vars == "Sensor 13";
 
 figure; hold on

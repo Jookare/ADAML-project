@@ -4,17 +4,17 @@
 
 clc; clear all; close all;
 
-   i =1;%select case
-   k_cv =5;
-   N_PLS = 4;%choose number of LV's
-   Data = load(i);
-   doCV(Data, k_cv);
-   trainModel(Data, N_PLS);
-   %biplot(Data);
+i =1;%select case
+k_cv =5;
+N_PLS = 4;%choose number of LV's
+Data = load(i);
+doCV(Data, k_cv);
+trainModel(Data, N_PLS);
+%biplot(Data);
 
 %% load data for the ase
-function [Data] = load(i) 
-% Load all data to a cell array for easy manipulation
+function [Data] = load_data(i) 
+  % Load all data to a cell array for easy manipulation
    Data = struct();
    Train = readmatrix("data/train_FD00" + num2str(i) + ".txt");
    Test = readmatrix("data/test_FD00" + num2str(i) + ".txt");
@@ -82,9 +82,11 @@ end
 function[] = trainModel(Data, N_PLS)
     X_train = Data.Train.data(:,3:end);
     Y_train = Data.Train.data(:,2);
+    Y_train_mu = mean(Y_train);
+    Y_train = Y_train - Y_train_mu;
     % Create a PLS model for the full train data
     [~,~,~,~, betaPLS_final] = plsregress(X_train, Y_train, N_PLS);
-    betas = [betaPLS_final(2:end)];%why drop the first out?
+    betas = [betaPLS_final(1:end)];%why drop the first out?
     figure();
     bar(betas);legend("PLS Regression Coefficients");xticklabels(Data.varNames);
 
@@ -92,9 +94,11 @@ function[] = trainModel(Data, N_PLS)
     X_test = Data.Test.data(:,3:end);
     Y_test = Data.Test.data(:,2);
     [rows, ~] = size(X_test);
-    yfitPLS = [ones(rows,1) X_test]*betas;
+    yfitPLS = [ones(rows,1) X_test]*betas + Y_train_mu;
+    % yfitPLS = [X_test]*betas;
     figure();
-    scatter(Y_test,yfitPLS); hold on; title(Data.caseName);
+    scatter(Y_test, yfitPLS); hold on; title(Data.caseName);
+    axis equal
     xlabel("True RUL testing value");
     ylabel("PLS prediction");
 end
