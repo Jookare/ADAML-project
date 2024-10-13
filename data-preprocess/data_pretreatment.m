@@ -1,4 +1,4 @@
-function Data = load_data(engine_id)
+function Data = data_pretreatment(engine_id)
 % LOAD DATA - Loads and preprocesses data for the given engine id
     Data = struct();
 
@@ -8,7 +8,7 @@ function Data = load_data(engine_id)
     RUL = readmatrix("data/RUL_FD00" + num2str(engine_id) + ".txt");
 
     % Preprocess data
-    [Train_out, Test_out, Vars] = Data_preprocess(Train, Test, RUL);
+    [Train_out, Test_out, Vars] = data_preprocess(Train, Test, RUL);
     
     % Store in struct
     Data.Train = Train_out;
@@ -18,7 +18,7 @@ function Data = load_data(engine_id)
 end
 
 
-function [Train, Test, Vars] = Data_preprocess(Train, Test, RUL)
+function [Train, Test, Vars] = data_preprocess(Train, Test, RUL)
 %DATA_PREPROCESS - preprocesses input data
 %   This function takes in train and test data applies filtering and
 %   normalization.

@@ -1,4 +1,4 @@
-function calibrate_model(Data, k_cv) 
+function model_calibration(Data, k_cv) 
 
     train_data = Data.Train; % Get the training data
     N_units = max(train_data(:, 1)); % Find how many units

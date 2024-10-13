@@ -12,7 +12,7 @@ engine_id = 1;
 k_cv = 5;
 plot_flag = 1;
 
-% Selected from the Q2 and RMSE plots
+% Selected from the Q2 and RMSE plots of model_calibration
 switch engine_id
     case 1
         N_PLS = 4;
@@ -25,51 +25,24 @@ switch engine_id
 end
 
 % Load data and calibrate model. 
-Data = load_data(engine_id);
-calibrate_model(Data, k_cv)
-train_model(Data, N_PLS, plot_flag, 1)
+Data = data_pretreatment(engine_id);
+model_calibration(Data, k_cv)
+model_optimization(Data, N_PLS)
 
-% Plot individual units
-individual_units(Data, N_PLS)
-
-% Train_model function
-function train_model(Data, N_PLS, plot_flag, kernel)
-    X_train = Data.Train(:,3:end);
-    Y_train = Data.Train(:,2).^kernel;
-    Y_train_mu = mean(Y_train);
-    Y_train = Y_train - Y_train_mu;
-
-    % Create a PLS model for the full train data
-    [~,~,~,~, betaPLS] = plsregress(X_train, Y_train, N_PLS);
-        
-    % Apply the model to a test data
-    X_test = Data.Test(:,3:end);
-    Y_test = Data.Test(:,2);
-    [rows, ~] = size(X_test);
-    yfitPLS = [ones(rows,1) X_test]*betaPLS + Y_train_mu;
-    yfitPLS = yfitPLS.^(1/kernel);
-    
-    if plot_flag
-        % Barplot of the coefficients
-        figure();
-        bar(betaPLS(2:end));
-        legend("PLS Regression Coefficients");
-        xticklabels(Data.varNames(3:end));
-        
-        % RUL plot
-        figure()
-        scatter(Y_test, yfitPLS); 
-        title(Data.caseName);
-        axis equal
-        xlabel("True RUL testing value");
-        ylabel("PLS prediction");
-    end
-
-    % Compute absolut error in RULS
-    E = mean(sqrt((Y_test - yfitPLS).^2))    
-end
+% model_evaluation(Data, N_PLS, plot_flag, 1)
 
 
+
+
+
+
+
+
+
+%% Plot individual units
+
+
+% individual_units(Data, N_PLS)
 % Plots predictions for individual units
 function individual_units(Data, N_PLS)
     kernel = 1;
