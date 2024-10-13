@@ -40,6 +40,7 @@ function [Train, Test, Vars] = Data_preprocess(Train, Test, RUL)
     X_train2 = X_train(:, ~train_mask);
     X_test2 = X_test(:, ~train_mask);
     
+    
     % Computes the RUL for each measurement row
     RUL_train = compute_RUL(Train);
     RUL_test = compute_RUL(Test, RUL);
