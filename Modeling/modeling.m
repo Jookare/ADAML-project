@@ -10,7 +10,7 @@ clearvars
 % show_plots: true/false flag for showing plots
 % N_PLS: Number of LVs for PLS model
 
-engine_id = 2;
+engine_id = 1;
 k_cv = 5;
 show_plots = true;
 
@@ -19,7 +19,7 @@ switch engine_id
     case 1
         N_PLS = 4;
     case 2
-        N_PLS = 12;
+        N_PLS = 12; % Quite large now that I think about it.
     case 3
         N_PLS = 4;
     case 4
@@ -32,12 +32,13 @@ model_calibration(Data, k_cv, show_plots);
 
 [scoresVIP, indexVip] = model_optimization(Data, N_PLS, show_plots);
 
-% Data.Train(:, [false; false; scoresVIP >= 1]) = [];
-% Data.Test(:, [false; false; scoresVIP >= 1]) = [];
-% Data.varNames(:, [false; false; scoresVIP >= 1]) = [];
+% Future work, properly analyse the coefficients and VIP scores
+% Data.Train(:, [false; false; scoresVIP < 0.8]) = [];
+% Data.Test(:, [false; false; scoresVIP < 0.8]) = [];
+% Data.varNames(:, [false; false; scoresVIP < 0.8]) = [];
 
 model_evaluation(Data, N_PLS, show_plots);
-% 
+
 
 %% Plot individual units
 % Chooses 9 random units from given datasets and shows the time-series
