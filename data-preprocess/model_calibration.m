@@ -1,4 +1,4 @@
-function model_calibration(Data, k_cv) 
+function model_calibration(Data, k_cv, show_plots) 
 
     train_data = Data.Train; % Get the training data
     N_units = max(train_data(:, 1)); % Find how many units
@@ -17,10 +17,13 @@ function model_calibration(Data, k_cv)
         [calib, valid] = cross_validation(train_data, cv, j);
         % Get the variables and the RUL
         X_calib = calib(:, 3:end);
-        Y_calib = calib(:,2) - mean(calib(:,2));
-    
+        [X_calib, mu, sigma] = zscore(X_calib);
+
+        Y_calib_mu = mean(calib(:,2));
+        Y_calib = calib(:,2) - Y_calib_mu;
         X_valid = valid(:, 3:end);
-        Y_valid = valid(:,2) - mean(valid(:,2));
+        X_valid = normalize(X_valid, 'center', mu, 'scale', sigma);
+        Y_valid = valid(:,2);
 
         [rows, ~] = size(X_valid);
 
@@ -30,7 +33,7 @@ function model_calibration(Data, k_cv)
         for k = 1:N_vars
             [~, ~, ~, ~, betaPLS] = plsregress(X_calib, Y_calib, k);
             % Fit to the validation data
-            yfitPLS = [ones(rows,1) X_valid]*betaPLS;
+            yfitPLS = [ones(rows,1) X_valid]*betaPLS +  Y_calib_mu;
 
             % Predicted Error Sum of Squares (PRESS)
             PLS_press(j,k) = sum((Y_valid - yfitPLS).^2);
@@ -47,11 +50,13 @@ function model_calibration(Data, k_cv)
     Q2_CV_PLS = mean(PLS_Q2);
     RMSE_CV_PLS = mean(PLS_rmse);
     
-    figure();
-    subplot(1,2,1);
-    plot(Q2_CV_PLS); xlabel("Latent Variables");title(Data.caseName);ylabel("Q^2_{CV}")
-    subplot(1,2,2);
-    plot(RMSE_CV_PLS);xlabel("Latent Variables");title(Data.caseName);ylabel("RMSE_{CV}")
+    if show_plots
+        figure();
+        subplot(1,2,1);
+        plot(Q2_CV_PLS); xlabel("Latent Variables");title(Data.caseName);ylabel("Q^2_{CV}")
+        subplot(1,2,2);
+        plot(RMSE_CV_PLS);xlabel("Latent Variables");title(Data.caseName);ylabel("RMSE_{CV}")
+    end
 end
 
 

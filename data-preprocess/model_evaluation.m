@@ -1,9 +1,11 @@
 % Train_model function
-function model_evaluation(Data, N_PLS, plot_flag, kernel)
+function model_evaluation(Data, N_PLS, show_plots)
     X_train = Data.Train(:,3:end);
-    Y_train = Data.Train(:,2).^kernel;
+    Y_train = Data.Train(:,2);
     Y_train_mu = mean(Y_train);
     Y_train = Y_train - Y_train_mu;
+
+
 
     % Create a PLS model for the full train data
     [~,~,~,~, betaPLS] = plsregress(X_train, Y_train, N_PLS);
@@ -14,9 +16,8 @@ function model_evaluation(Data, N_PLS, plot_flag, kernel)
     [rows, ~] = size(X_test);
 
     yfitPLS = [ones(rows,1) X_test]*betaPLS + Y_train_mu;
-    yfitPLS = yfitPLS.^(1/kernel);
     
-    if plot_flag
+    if show_plots
         % Barplot of the coefficients
         figure();
         bar(betaPLS(2:end));
@@ -25,15 +26,17 @@ function model_evaluation(Data, N_PLS, plot_flag, kernel)
         
         % RUL plot
         figure()
-        scatter(Y_test, yfitPLS); 
+        c = abs(Y_test - yfitPLS);
+        scatter(Y_test, yfitPLS, 100, c, '.'); 
+        colorbar
         title(Data.caseName);
         axis equal
         xlabel("True RUL testing value");
         ylabel("PLS prediction");
     end
 
-    % Compute metrics
-    TSS = sum((Y_test - mean(Y_test)).^2);
+    % Compute TSS
+    TSS = sum((Y_train - mean(Y_train)).^2);
 
     % Predicted Error Sum of Squares (PRESS)
     PLS_press = sum((Y_test - yfitPLS).^2);

@@ -7,11 +7,12 @@ clearvars
 
 Data = {};
 for engine_id = 1:4
-    data = load_data(engine_id);
+    data = data_pretreatment(engine_id);
     Data(engine_id).Train = data.Train;
     Data(engine_id).Test = data.Test;
     Data(engine_id).varNames = data.varNames;
 end
+
 %% Visualize train and test data in 2 by 4 grid for easy comparison
 figure;
 types = {'Train', 'Test'};
@@ -57,15 +58,64 @@ plot(data(unit_i, idx))
 
 %% Visualize raw data for report
 close all
-Train = readmatrix("data/train_FD004.txt");
+data1 = readmatrix("data/train_FD001.txt");
+data2 = readmatrix("data/train_FD002.txt");
 
 
-% Take data for unit 50
-data = Train(Train(:,1) == 50, 6:end);
+data1 = data1(data1(:,1) == 50, 1:end);
+data1 = zscore(data1);
+data2 = data2(data2(:,1) == 50, 1:end);
+data2 = zscore(data2);
+
 % plot few sensors
 for k = [1, 7, 9]
     figure
-    plot(data(:, k))
+    plot(data1(:, k+5))
+    if k == 1
+        ylim([-1.5 2])
+    elseif k == 9
+        ylim([-2 3.5])
+    end
     xlabel("Time (cycles)")
     ylabel("measurement")
+    xlim([0, 222])
+    figure
+    plot(data2(:, k+5))
+    if k == 7
+        ylim([-3 3])
+    elseif k == 9
+        ylim([-2 3.5])
+
+    end
+    xlabel("Time (cycles)")
+    ylabel("measurement")
+    xlim([0, 222])
 end
+
+%% Visualize (normalized) raw data
+close all
+Sensors = strings(1, 21);
+for i = 1:21
+    Sensors(1, i) = ['Sensor ', num2str(i)];
+end
+
+% Find the Columns that are left
+vars = ['Unit', 'Time', 'OS1', 'OS2', 'OS3', Sensors];
+    
+for k = 1:4
+    % Load data
+    Train = readmatrix("data/train_FD00" + num2str(k) + ".txt");
+    Test = readmatrix("data/test_FD00" + num2str(k) + ".txt");
+    
+    data = zscore(Train);
+    figure
+    boxplot(data, vars);
+    title("train\_FD00" + num2str(k))
+end
+
+%%
+close all
+data = Data(2).Train;
+
+
+plot(data(:,3), data(:,4), '.')
