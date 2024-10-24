@@ -11,7 +11,7 @@ clearvars
 % show_plots: true/false flag for showing plots
 % N_PLS: Number of LVs for PLS model
 
-engine_id = 1;
+engine_id = 3;
 k_cv = 5;
 show_plots = true;
 
@@ -38,7 +38,7 @@ Data = data_pretreatment(engine_id);
 model_calibration(Data, k_cv, show_plots);
 
 % Optimize model (Remove unnecessary variables)
-Data = model_optimization(Data, N_PLS, show_plots, VIP_th);
+Data = model_optimization(Data, N_PLS, k_cv, show_plots, VIP_th);
 
 % Check calibration again
 model_calibration(Data, k_cv, show_plots);

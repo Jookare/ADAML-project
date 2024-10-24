@@ -11,8 +11,14 @@ function Data = data_pretreatment(engine_id)
     [Train_out, Test_out, Vars] = data_preprocess(Train, Test, RUL);
     
     % Store in struct
-    Data.Train = Train_out;
-    Data.Test = Test_out;
+    Data.Xtrain = Train_out(:, 3:end);
+    Data.Ytrain = Train_out(:, 2);
+    Data.TrainUnits = Train_out(:,1);
+
+    Data.Xtest = Test_out(:, 3:end);
+    Data.Ytest = Test_out(:, 2);
+    Data.TestUnits = Test_out(:,1);
+
     Data.caseName = "FD\_00"+num2str(engine_id);
     Data.varNames = Vars;
 end
@@ -56,7 +62,7 @@ function [Train, Test, Vars] = data_preprocess(Train, Test, RUL)
     end
     
     % Find the Columns that are left
-    vars = ['Unit', 'RUL', Sensors(~train_mask)];
+    vars = [Sensors(~train_mask)];
     
     % Clear variables for struct
     clear Train Valid Test

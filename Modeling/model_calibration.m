@@ -1,11 +1,10 @@
 function [Q2_CV_PLS, RMSE_CV_PLS] = model_calibration(Data, k_cv, show_plots) 
 
-    train_data = Data.Train; % Get the training data
-    N_units = max(train_data(:, 1)); % Find how many units
+    N_units = max(Data.TrainUnits); % Find how many units
     cv = cvpartition(N_units, 'KFold', k_cv); % initialize k-fold cross-validation
 
     % Find the number of variables
-    N_vars = length(Data.varNames(3:end));
+    N_vars = length(Data.varNames);
     
     % Initialize metric arrays
     PLS_press = zeros(k_cv, N_vars);
@@ -14,16 +13,16 @@ function [Q2_CV_PLS, RMSE_CV_PLS] = model_calibration(Data, k_cv, show_plots)
 
     % For each j gets a Calib and Valid data
     for j = 1:k_cv
-        [calib, valid] = cross_validation(train_data, cv, j);
-        % Get the variables and the RUL
-        X_calib = calib(:, 3:end);
-        [X_calib, mu, sigma] = zscore(X_calib);
+        [Calib, Valid] = cross_validation(Data, cv, j);
 
-        Y_calib_mu = mean(calib(:,2));
-        Y_calib = calib(:,2) - Y_calib_mu;
-        X_valid = valid(:, 3:end);
-        X_valid = normalize(X_valid, 'center', mu, 'scale', sigma);
-        Y_valid = valid(:,2);
+        % Get the variables and the RUL
+        [X_calib, mu, sigma] = zscore(Calib.X);
+
+        Y_calib_mu = mean(Calib.Y);
+        Y_calib = Calib.Y - Y_calib_mu;
+
+        X_valid = normalize(Valid.X, 'center', mu, 'scale', sigma);
+        Y_valid = Valid.Y;
 
         [rows, ~] = size(X_valid);
 
@@ -67,12 +66,12 @@ function [Q2_CV_PLS, RMSE_CV_PLS] = model_calibration(Data, k_cv, show_plots)
 end
 
 
-function [Calib, Valid] = cross_validation(Train, cv, i)
+function [Calib, Valid] = cross_validation(Data, cv, i)
 %CROSS_VALIDATION - function that takes in the Train dataset, cvpartition
 % and i to define the cv number. Returns Calibration and Validation
 % datasets.
 
-    units = unique(Train(:, 1));
+    units = unique(Data.TrainUnits);
 
     % Get the indices for training and validation sets
     idx_calib = training(cv, i);
@@ -83,7 +82,15 @@ function [Calib, Valid] = cross_validation(Train, cv, i)
     valid_units = units(idx_valid);
 
     % Find rows in Train that correspond to calibration and validation units
-    Calib = Train(ismember(Train(:, 1), calib_units), :);
-    Valid = Train(ismember(Train(:, 1), valid_units), :);
+    calib_rows = ismember(Data.TrainUnits, calib_units);
+    valid_rows = ismember(Data.TrainUnits, valid_units);
+    
+    % Construct Calib and Valid datas
+    Calib.X = Data.Xtrain(calib_rows,:);
+    Calib.Y = Data.Ytrain(calib_rows);
+
+    Valid.X = Data.Xtrain(valid_rows,:);
+    Valid.Y = Data.Ytrain(valid_rows);
+
 end
 

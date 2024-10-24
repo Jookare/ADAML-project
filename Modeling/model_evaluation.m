@@ -1,7 +1,7 @@
 % Train_model function
 function model_evaluation(Data, N_PLS, show_plots)
-    X_train = Data.Train(:,3:end);
-    Y_train = Data.Train(:,2);
+    X_train = Data.Xtrain;
+    Y_train = Data.Ytrain;
     Y_train_mu = mean(Y_train);
     Y_train = Y_train - Y_train_mu;
 
@@ -11,8 +11,8 @@ function model_evaluation(Data, N_PLS, show_plots)
     [~,~,~,~, betaPLS] = plsregress(X_train, Y_train, N_PLS);
         
     % Apply the model to a test data
-    X_test = Data.Test(:,3:end);
-    Y_test = Data.Test(:,2);
+    X_test = Data.Xtest;
+    Y_test = Data.Ytest;
     [rows, ~] = size(X_test);
 
     yfitPLS = [ones(rows,1) X_test]*betaPLS + Y_train_mu;
@@ -22,7 +22,7 @@ function model_evaluation(Data, N_PLS, show_plots)
         figure();
         bar(betaPLS(2:end));
         legend("PLS Regression Coefficients");
-        xticklabels(Data.varNames(3:end));
+        xticklabels(Data.varNames);
         
         % RUL plot
         figure()
@@ -53,7 +53,7 @@ function model_evaluation(Data, N_PLS, show_plots)
 
     % Q²
     PLS_Q2 = 1 - PLS_press/TSS;
-    
+    fprintf("\nModel evaluation results:\n")
     disp("Q2:")
     disp(PLS_Q2)
 

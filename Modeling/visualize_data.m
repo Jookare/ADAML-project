@@ -155,8 +155,8 @@ Data = data_pretreatment(engine_id);
 individual_units(Data, N_PLS)
 % Plots predictions for individual units
 function individual_units(Data, N_PLS)
-    X_train = Data.Train(:,3:end);
-    Y_train = Data.Train(:,2);
+    X_train = Data.Xtrain;
+    Y_train = Data.Ytrain;
     Y_train_mu = mean(Y_train);
     Y_train = Y_train - Y_train_mu;
 
@@ -164,21 +164,21 @@ function individual_units(Data, N_PLS)
     [~,~,~,~, betaPLS] = plsregress(X_train, Y_train, N_PLS);
     
     % Apply the model to random units
-    X_test = Data.Test(:,3:end);
-    Y_test = Data.Test(:,2);
+    X_test = Data.Xtest;
+    Y_test = Data.Ytest;
     
-    N_units = max(Data.Test(:,1));
+    N_units = max(Data.TestUnits);
     figure();
     for k = 1:9
         subplot(3,3,k); hold on
         idx = randi(N_units);
-        X = X_test(Data.Test(:,1) == idx, :);
+        X = X_test(Data.TestUnits == idx, :);
         [rows, ~] = size(X);
         
         yfitPLS = [ones(rows,1) X]*betaPLS + Y_train_mu;
     
         plot(yfitPLS)
-        plot(Y_test(Data.Test(:,1) == idx))
+        plot(Y_test(Data.TestUnits == idx))
         title("Unit "+num2str(idx))
         xlabel("Time (cycles)");
         ylabel("RUL");
