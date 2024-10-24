@@ -27,12 +27,19 @@ function model_evaluation(Data, N_PLS, show_plots)
         % RUL plot
         figure()
         c = abs(Y_test - yfitPLS);
-        scatter(Y_test, yfitPLS, 100, c, '.'); 
+        scatter(Y_test, yfitPLS, 50, c, '.'); 
         colorbar
         title(Data.caseName);
         axis equal
         xlabel("True RUL testing value");
         ylabel("PLS prediction");
+
+        % Residual plot
+        figure()
+        scatter(Y_test, c, 50, c, '.');
+        ylabel("Residual")
+        xlabel("True RUL testing value")
+        
     end
 
     % Compute TSS
@@ -52,4 +59,6 @@ function model_evaluation(Data, N_PLS, show_plots)
 
     disp("RMSE:")
     disp(PLS_rmse)
+
+
 end

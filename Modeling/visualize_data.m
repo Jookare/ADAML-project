@@ -113,9 +113,76 @@ for k = 1:4
     title("train\_FD00" + num2str(k))
 end
 
-%%
+%% Plot Q² and RMSE 
+clc
 close all
-data = Data(2).Train;
+clearvars
+
+k_cv = 5;
+for engine_id = 1:4
+    Data = data_pretreatment(engine_id);
+    
+    model_calibration(Data, k_cv, engine_id);
+
+end
+% print('-dpdf','Test_plot.pdf','-bestfit','-r200')
 
 
-plot(data(:,3), data(:,4), '.')
+%% Visualize the individual unit predictions
+
+
+% Chooses 9 random units from given datasets and shows the time-series
+% style RUL prediction
+engine_id = 3;
+k_cv = 5;
+show_plots = true;
+
+% Selected from the Q2 and RMSE plots of model_calibration
+switch engine_id
+    case 1
+        N_PLS = 4;
+    case 2
+        N_PLS = 7; % Quite large now that I think about it.
+    case 3
+        N_PLS = 4;
+    case 4
+        N_PLS = 9;
+end
+
+% Load data and calibrate model. 
+Data = data_pretreatment(engine_id);
+
+individual_units(Data, N_PLS)
+% Plots predictions for individual units
+function individual_units(Data, N_PLS)
+    X_train = Data.Train(:,3:end);
+    Y_train = Data.Train(:,2);
+    Y_train_mu = mean(Y_train);
+    Y_train = Y_train - Y_train_mu;
+
+    % Create a PLS model for the full train data
+    [~,~,~,~, betaPLS] = plsregress(X_train, Y_train, N_PLS);
+    
+    % Apply the model to random units
+    X_test = Data.Test(:,3:end);
+    Y_test = Data.Test(:,2);
+    
+    N_units = max(Data.Test(:,1));
+    figure();
+    for k = 1:9
+        subplot(3,3,k); hold on
+        idx = randi(N_units);
+        X = X_test(Data.Test(:,1) == idx, :);
+        [rows, ~] = size(X);
+        
+        yfitPLS = [ones(rows,1) X]*betaPLS + Y_train_mu;
+    
+        plot(yfitPLS)
+        plot(Y_test(Data.Test(:,1) == idx))
+        title("Unit "+num2str(idx))
+        xlabel("Time (cycles)");
+        ylabel("RUL");
+    end
+    legend("Predicted RUL", "True RUL")
+    sgtitle(Data.caseName)
+end

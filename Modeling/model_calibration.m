@@ -1,4 +1,4 @@
-function model_calibration(Data, k_cv, show_plots) 
+function [Q2_CV_PLS, RMSE_CV_PLS] = model_calibration(Data, k_cv, show_plots) 
 
     train_data = Data.Train; % Get the training data
     N_units = max(train_data(:, 1)); % Find how many units
@@ -52,10 +52,17 @@ function model_calibration(Data, k_cv, show_plots)
     
     if show_plots
         figure();
-        subplot(1,2,1);
-        plot(Q2_CV_PLS); xlabel("Latent Variables");title(Data.caseName);ylabel("Q^2_{CV}")
-        subplot(1,2,2);
-        plot(RMSE_CV_PLS);xlabel("Latent Variables");title(Data.caseName);ylabel("RMSE_{CV}")
+        subplot(1,2,1)
+        plot(Q2_CV_PLS); 
+        title(Data.caseName);
+        xlabel("Latent Variables");
+        ylabel("Q^2_{CV}")
+
+        subplot(1, 2, 2);
+        plot(RMSE_CV_PLS);
+        title(Data.caseName);
+        xlabel("Latent Variables");
+        ylabel("RMSE_{CV}")
     end
 end
 
