@@ -47,7 +47,7 @@ model_calibration(Data, k_cv, show_plots);
 model_evaluation(Data, N_PLS, show_plots);
 
 
-%% Kernel PLS
+%% Kernel PLS (initialized by: AK)
 clc
 close all
 clearvars
@@ -78,34 +78,25 @@ Data = data_pretreatment(engine_id);
 model_calibration(Data, k_cv, show_plots);
 
 % Optimize model (Remove unnecessary variables)
-Data = model_optimization(Data, N_PLS, show_plots, VIP_th);
+Data = model_optimization(Data, N_PLS, k_cv, show_plots, VIP_th);
 
-% Initialize the model for Kernel PLS codes
-model.X = Data.Train(:, 3:end);
-model.Y = Data.Train(:, 2);
-
-model.Xtest = Data.Test(:, 3:end);
-model.Ytest = Data.Test(:, 2);
-
-[vvv, noRows] = size(model.X);
-
-model.initialParam = [1, 1]; %[1,1];
+model = {};
+model.datasetName = "RUL";
+model.initialParam = [2, -1];
 model.nsamp        = 1;
 model.learnRate    = 0.1;
-model.regrType     = 1; % 1 to be used in classification, 2 for regression, 3 PCR
-model.dim          = 8; % 2 iver
-model.iter         = 1000;
+model.regrType     = 2; % 1 to be used in classification, 2 for regression, 3 PCR 
+model.iter         = 100;
 model.center       = 1;
 model.params       = exp(model.initialParam);
 model.plot         = 1;
 model.sp           = 0.5;
-model.kernelType   = "cauchy";
-model.classification = 1; % put = 1 if you are using classification
-model.momentum     = 1; % use 1 for classification / 1 works better with few parameters, 2 works better with many parameters
-model.family       = 0; % Uses a family of kernels needs 10 parameters -1 for individual variable parameters
+model.kernelType   = "gaussian";
+model.classification = 0;
+model.momentum     = 1; % 1 works better with few parameters, 2 works better with many parameters
+model.family       = 0; 
 model.redPredict   = 0;
+model.Err = [];
 
 
-model               = predict(model);
-model.initialParams = model.params;
-model.initialError  = mse(model.ypred, model.Ytest)
+model = KPLS_model_optimization(Data, N_PLS, model);
