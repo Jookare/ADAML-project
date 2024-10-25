@@ -55,7 +55,14 @@ elseif strcmp(model.datasetName, "covid") || strcmp(model.datasetName, "hyperspe
     end
     decoded = double(decoded);
     model.accuracy = sum(decoded == double(model.YCodeT)) / numel(decoded);
-
+elseif strcmp(model.datasetName, "NASA")
+    figure()
+    c = abs(model.Ytest - model.ypred);
+    scatter(model.Ytest, model.ypred, 50, c, '.'); 
+    colorbar
+    axis equal
+    xlabel("True RUL testing value");
+    ylabel("PLS prediction");
 else
 
     figure;

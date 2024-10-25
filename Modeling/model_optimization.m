@@ -30,18 +30,18 @@ function Data = model_optimization(Data, N_PLS, k_cv, show_plots, VIP_th)
 
             disp("Q2 score: "+num2str(round(Q2_orig(N_PLS), 4)) + " => "+num2str(round(Q2_new(N_PLS), 4)))
             disp("RMSE score: "+num2str(round(RMSE_orig(N_PLS),2)) + " => "+num2str(round(RMSE_new(N_PLS), 2)))
+
         else
             % pause(1)
         end
     end
-    
+    compute_VIP(Data.Xtrain, Data.Ytrain, N_PLS, VIP_th, Data.varNames, show_plots);
     
 end
 
 function [Data, stopFlag] = remove_variables(Data, vipScore, betaPLS, VIP_th)
     [sorted_VIP, idx_VIP] = sort(vipScore);
     [sorted_B, idx_B] = sort(abs(betaPLS));
-
     lowVIP = sorted_VIP < VIP_th;
     lowBeta = abs(betaPLS) < 1;
     
@@ -52,7 +52,7 @@ function [Data, stopFlag] = remove_variables(Data, vipScore, betaPLS, VIP_th)
         Data.Xtest(:, idx_VIP(1)) = [];
         Data.varNames(idx_VIP(1)) = [];
     elseif sorted_B(1) < 1.5
-        disp("Removing variable '" + Data.varNames(idx_VIP(1))+ "' due to low regression coefficient")
+        disp("Removing variable '" + Data.varNames(idx_B(1))+ "' due to low regression coefficient")
         Data.Xtrain(:, idx_B(1)) = [];
         Data.Xtest(:, idx_B(1)) = [];
         Data.varNames(idx_B(1)) = [];

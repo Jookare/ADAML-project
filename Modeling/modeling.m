@@ -11,7 +11,7 @@ clearvars
 % show_plots: true/false flag for showing plots
 % N_PLS: Number of LVs for PLS model
 
-engine_id = 3;
+engine_id = 1;
 k_cv = 5;
 show_plots = true;
 
@@ -52,7 +52,7 @@ clc
 close all
 clearvars
 
-engine_id = 1;
+engine_id = 3;
 k_cv = 5;
 show_plots = true;
 
@@ -81,8 +81,8 @@ model_calibration(Data, k_cv, show_plots);
 Data = model_optimization(Data, N_PLS, k_cv, show_plots, VIP_th);
 
 model = {};
-model.datasetName = "RUL";
-model.initialParam = [2, -1];
+model.datasetName = "NASA";
+model.initialParam = [1,1];
 model.nsamp        = 1;
 model.learnRate    = 0.1;
 model.regrType     = 2; % 1 to be used in classification, 2 for regression, 3 PCR 
@@ -91,12 +91,23 @@ model.center       = 1;
 model.params       = exp(model.initialParam);
 model.plot         = 1;
 model.sp           = 0.5;
-model.kernelType   = "gaussian";
+
+% gaussian, matern1/2, matern3/2, matern5/2, cauchy
+kernels = ["gaussian", "matern1/2", "matern3/2", "matern5/2", "cauchy"];
+model.kernelType   = "matern3/2";
 model.classification = 0;
-model.momentum     = 1; % 1 works better with few parameters, 2 works better with many parameters
+model.momentum     = 2; % 1 works better with few parameters, 2 works better with many parameters
 model.family       = 0; 
 model.redPredict   = 0;
 model.Err = [];
 
+optimize = true;
 
-model = KPLS_model_optimization(Data, N_PLS, model);
+model = KPLS_model_optimization(Data, N_PLS, model, optimize);
+
+model.finalParams
+model.Err(end)
+
+%%
+% Engine 2: matern5/2
+% Engine 3: matern3/2
