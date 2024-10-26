@@ -19,9 +19,8 @@ function Data = data_pretreatment(engine_id, skewRUL)
     Data.Ytest = Test_out(:, 2);
     Data.TestUnits = Test_out(:,1);
 
-    Data.caseName = strcat("FD\_00"+num2str(engine_id),", skewer=",num2str(skewRUL));
+    Data.caseName = "FD\_00"+num2str(engine_id);
     Data.varNames = Vars;
-    Data.skewer = skewRUL;
 end
 
 
@@ -49,8 +48,8 @@ function [Train, Test, Vars] = data_preprocess(Train, Test, RUL,skewRUL)
     
     
     % Computes the RUL for each measurement row
-    RUL_train = compute_RUL(Train,[],skewRUL,0);
-    RUL_test = compute_RUL(Test, RUL,skewRUL,1);
+    RUL_train = compute_RUL(Train,0,skewRUL);
+    RUL_test = compute_RUL(Test, RUL,skewRUL);
     
     % Add Unit and RUL to the array.
     Train_data = cat(2, Train(:,1), RUL_train, X_train2);
@@ -88,7 +87,7 @@ function mask = create_mask(data)
 end
 
 
-function RUL_col = compute_RUL(data, RUL, skew, testing)
+function RUL_col = compute_RUL(data, RUL, skew)
 % Creates the RUL for each measurement row. Can be given a vector that
 % includes the RULs so that is used as the last RUL instead
     
@@ -105,7 +104,7 @@ function RUL_col = compute_RUL(data, RUL, skew, testing)
         cycles = data(unit_idx, 2);
         
         % Calculate the RUL: max(cycles) - current cycle
-        if testing==1
+        if nargin == 3
             max_rul = RUL(i) + length(cycles);
             rul = max_rul - cycles;
         else

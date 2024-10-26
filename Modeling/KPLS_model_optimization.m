@@ -1,8 +1,9 @@
 function model = KPLS_model_optimization(Data, N_PLS, model, optimize)
 %MODEL_OPTIMIZATION Summary of this function goes here
 %   Detailed explanation goes here
-    S = 20; % step length for subsetting the data
 
+    S =30;
+ 
     model.dim = N_PLS;
     model.X = Data.Xtrain(1:S:end, :);
     model.Y = Data.Ytrain(1:S:end);
@@ -10,17 +11,17 @@ function model = KPLS_model_optimization(Data, N_PLS, model, optimize)
     model.Y = model.Y - model.muY;
     
     % Apply the model to a test data
-    model.Xtest = Data.Xtest(1:S:end, :);
-    model.Ytest = Data.Ytest(1:S:end);
+    model.Xtest = Data.Xtest(1:end, :);
+    model.Ytest = Data.Ytest(1:end);
     
     model       = predict(model);
     model.ypred = model.ypred + model.muY;
     model.initialParams = model.params;
     model.Err(end+1) = rmse(model.ypred, model.Ytest);
 
-    if model.plot
-        model = plotResults(model);
-        title("Initial model")
+    if model.plot % this initial plot is unnecessary
+        %model = plotResults(model);
+        %title("Initial model")
     end
     
     if optimize
@@ -64,7 +65,7 @@ function model = KPLS_model_optimization(Data, N_PLS, model, optimize)
     
         if model.plot
             model = plotResults(model);
-            title("Final model")
+            title("Final k-PLS model - "+ Data.caseName )
         end
     end
 end

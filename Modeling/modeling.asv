@@ -1,16 +1,16 @@
 %% ADAML - Project work
-% Joona Kareinen & co
+% Joona Kareinen 
 % PLS - Partial Least Squares
 clc
 close all 
 clearvars
 
-%add Toolbox to path.
 currentFile     = matlab.desktop.editor.getActiveFilename;
 [pathstr, ~, ~] = fileparts(currentFile);
 paths           = fullfile(pathstr, 'Toolbox/common');
 addpath(paths)
 
+%addpath(genpath('D:/ADAML-project/Modeling/Toolbox/common/'));
 
 % Arguments for code
 % engine_id: dataset to use (1-4)
@@ -29,21 +29,18 @@ switch engine_id
         N_PLS = 2;
         VIP_th = 0.95;
         skewRUL = 0.3;
-        kPLS_optimize = true;
     case 2
         N_PLS = 5; 
         VIP_th = 0.6;
         skewRUL = 0.4;
-        kPLS_optimize = true;
     case 3
         N_PLS = 4;
         VIP_th = 0.9;
         skewRUL = 0.4;
-        kPLS_optimize = true;%this is not that good for FD003 but let's test it at least.
+        kPLS_optimize = true;
     case 4
         N_PLS = 5;
         VIP_th = 0.6;
-        skewRUL = 0.4;
         kPLS_optimize = true;% use k-PLS for this tricky case.
 end
 

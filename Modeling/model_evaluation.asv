@@ -26,13 +26,10 @@ function model_evaluation(Data, N_PLS, show_plots)
         
         % RUL plot
         figure()
-        
-        %take RUl skew into account
-        ytester = Y_test.^(1/Data.skewer);
-        ypred = yfitPLS.^(1/Data.skewer);
 
-        c = abs(ytester - ypred);
-        scatter(ytester, ypred, 50, c, '.'); 
+        
+        c = abs(Y_test - yfitPLS);
+        scatter(Y_test, yfitPLS, 50, c, '.'); 
         colorbar
         title(Data.caseName);
         axis equal
