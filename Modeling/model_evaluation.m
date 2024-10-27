@@ -1,5 +1,14 @@
 % Train_model function
 function model_evaluation(Data, N_PLS, show_plots)
+
+    % [X_train, mu, sigma] = zscore(Data.Xtrain);
+    % 
+    % Y_train_mu = mean(Data.Ytrain);
+    % Y_train = Data.Ytrain - Y_train_mu;
+    % 
+    % X_test = normalize(Data.Xtest, 'center', mu, 'scale', sigma);
+    % Y_test = Data.Ytest;
+
     X_train = Data.Xtrain;
     Y_train = Data.Ytrain;
     Y_train_mu = mean(Y_train);

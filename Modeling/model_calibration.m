@@ -1,6 +1,6 @@
 function [Q2_CV_PLS, RMSE_CV_PLS] = model_calibration(Data, k_cv, show_plots) 
 
-    N_units = max(Data.TrainUnits); % Find how many units
+    N_units = length(unique(Data.TrainUnits)); % Find how many units
     cv = cvpartition(N_units, 'KFold', k_cv); % initialize k-fold cross-validation
 
     % Find the number of variables

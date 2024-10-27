@@ -186,3 +186,6 @@ function individual_units(Data, N_PLS)
     legend("Predicted RUL", "True RUL")
     sgtitle(Data.caseName)
 end
+
+%% For different models based on cycles
+

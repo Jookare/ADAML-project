@@ -11,13 +11,15 @@ function Data = data_pretreatment(engine_id)
     [Train_out, Test_out, Vars] = data_preprocess(Train, Test, RUL);
     
     % Store in struct
-    Data.Xtrain = Train_out(:, 3:end);
-    Data.Ytrain = Train_out(:, 2);
     Data.TrainUnits = Train_out(:,1);
+    Data.TrainCycles = Train_out(:,2);
+    Data.Ytrain = Train_out(:, 3);
+    Data.Xtrain = Train_out(:, 4:end);
 
-    Data.Xtest = Test_out(:, 3:end);
-    Data.Ytest = Test_out(:, 2);
     Data.TestUnits = Test_out(:,1);
+    Data.TestCycles = Test_out(:,2);
+    Data.Ytest = Test_out(:, 3);
+    Data.Xtest = Test_out(:, 4:end);
 
     Data.caseName = "FD\_00"+num2str(engine_id);
     Data.varNames = Vars;
@@ -52,8 +54,8 @@ function [Train, Test, Vars] = data_preprocess(Train, Test, RUL)
     RUL_test = compute_RUL(Test, RUL);
     
     % Add Unit and RUL to the array.
-    Train_data = cat(2, Train(:,1), RUL_train, X_train2);
-    Test_data = cat(2, Test(:,1), RUL_test, X_test2);
+    Train_data = cat(2, Train(:,1), Train(:,2), RUL_train, X_train2);
+    Test_data = cat(2, Test(:,1), Test(:,2), RUL_test, X_test2);
     
     % Return variables for each data
     Sensors = strings(1, 21);
