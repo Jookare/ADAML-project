@@ -18,7 +18,7 @@ addpath(paths)
 % show_plots: true/false flag for showing plots
 % N_PLS: Number of LVs for PLS model
 
-engine_id = 3;
+engine_id = 2;
 k_cv = 5;
 show_plots = true;
 skewRUL = 1;% poorman's effort to skew all RUL-values nonlinearly (e.g., 0.5 => sqrt(x).
@@ -32,31 +32,36 @@ switch engine_id
         kPLS_optimize = true;
     case 2
         N_PLS = 5; 
-        VIP_th = 0.6;
+        VIP_th = 0.55;
         skewRUL = 0.4;
         kPLS_optimize = true;
     case 3
         N_PLS = 4;
-        VIP_th = 0.9;
+        VIP_th = 0.8;
         skewRUL = 0.4;
         kPLS_optimize = true;%this is not that good for FD003 but let's test it at least.
     case 4
         N_PLS = 5;
         VIP_th = 0.6;
-        skewRUL = 0.4;
+        skewRUL = 1;
         kPLS_optimize = true;% use k-PLS for this tricky case.
 end
+% skewRUL = 1;
 
 % Load data
 Data = data_pretreatment(engine_id, skewRUL);
+
+% Data_low contains all cycles that include less than cycle_th cycles and
+% data high the rest
+% cycle_th = 100;
+% [Data_low, Data_high] = split_data(Data, cycle_th);
+% Data = Data_low;
+
 % Run model calibration
-model_calibration(Data, k_cv, 0);
+model_calibration(Data, k_cv, 1);
 
 % Optimize model (Remove unnecessary variables)
 Data = model_optimization(Data, N_PLS, k_cv, show_plots, VIP_th);
-
-% Check calibration again
-model_calibration(Data, k_cv, show_plots);
 
 % Evaluate with test data
 model_evaluation(Data, N_PLS, show_plots);
@@ -67,10 +72,15 @@ if (kPLS_optimize)
     show_plots = false;
     %Load data again without skew and make no images.
     Data = data_pretreatment(engine_id, 1);
+    cycle_th = 100;
+    [Data_low, Data_high] = split_data(Data, cycle_th);
+    Data = Data_low;
+
     % Run model calibration
     model_calibration(Data, k_cv, 0);
+
     % Optimize model (Remove unnecessary variables)
-    Data = model_optimization(Data, N_PLS, k_cv, show_plots, VIP_th);
+    Data = model_optimization(Data, N_PLS, k_cv, 1, VIP_th);
     
     % Check calibration again
     model_calibration(Data, k_cv, show_plots);
@@ -80,7 +90,7 @@ if (kPLS_optimize)
 
     model = {};
     model.datasetName = "NASA";
-    model.initialParam = [1,1];
+    model.initialParam = -1 + 2*rand(1,2);
     model.nsamp        = 1;
     model.learnRate    = 0.15;
     model.regrType     = 2; % 1 to be used in classification, 2 for regression, 3 PCR 
@@ -100,11 +110,9 @@ if (kPLS_optimize)
     model.Err = [];
     
     model = KPLS_model_optimization(Data, N_PLS, model, kPLS_optimize);
-    model.finalParams
+    
     model.Err(end)
+    model.Q2
+    
 end
-
-%%
-% Engine 2: matern5/2
-% Engine 3: 0.1401    0.1639   34.7183    0.0219   12.7704    0.1365    4.4878    0.0427    0.9158    2.4963
 

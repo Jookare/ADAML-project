@@ -2,7 +2,7 @@ function model = KPLS_model_optimization(Data, N_PLS, model, optimize)
 %MODEL_OPTIMIZATION Summary of this function goes here
 %   Detailed explanation goes here
 
-    S =30;
+    S = 30;
  
     model.dim = N_PLS;
     model.X = Data.Xtrain(1:S:end, :);
@@ -20,8 +20,8 @@ function model = KPLS_model_optimization(Data, N_PLS, model, optimize)
     model.Err(end+1) = rmse(model.ypred, model.Ytest);
 
     if model.plot % this initial plot is unnecessary
-        %model = plotResults(model);
-        %title("Initial model")
+        % model = plotResults(model);
+        % title("Initial model")
     end
     
     if optimize
@@ -62,11 +62,20 @@ function model = KPLS_model_optimization(Data, N_PLS, model, optimize)
         model              = predict(model);
         model.ypred = model.ypred + model.muY;
         model.Err(end+1)  = rmse(model.ypred, model.Ytest);
+
+        % Compute TSS
+        TSS = sum((Data.Ytrain - mean(Data.Ytrain)).^2);
     
-        if model.plot
-            model = plotResults(model);
-            title("Final k-PLS model - "+ Data.caseName )
-        end
+        % Predicted Error Sum of Squares (PRESS)
+        PLS_press = sum((model.Ytest - model.ypred).^2);
+    
+        % Q²
+        model.Q2 = 1 - PLS_press/TSS;
+       
+    end
+    if model.plot
+        model = plotResults(model);
+        title("Final k-PLS model - "+ Data.caseName )
     end
 end
 

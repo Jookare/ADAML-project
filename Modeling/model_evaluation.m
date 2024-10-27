@@ -14,8 +14,6 @@ function model_evaluation(Data, N_PLS, show_plots)
     Y_train_mu = mean(Y_train);
     Y_train = Y_train - Y_train_mu;
 
-
-
     % Create a PLS model for the full train data
     [~,~,~,~, betaPLS] = plsregress(X_train, Y_train, N_PLS);
         
@@ -25,6 +23,11 @@ function model_evaluation(Data, N_PLS, show_plots)
     [rows, ~] = size(X_test);
 
     yfitPLS = [ones(rows,1) X_test]*betaPLS + Y_train_mu;
+
+    %take RUL skew into account
+    ytester = Y_test.^(1/Data.skewer);
+    ypred = yfitPLS.^(1/Data.skewer);
+    Y_train = (Y_train + Y_train_mu).^(1/Data.skewer);
     
     if show_plots
         % Barplot of the coefficients
@@ -35,11 +38,6 @@ function model_evaluation(Data, N_PLS, show_plots)
         
         % RUL plot
         figure()
-        
-        %take RUl skew into account
-        ytester = Y_test.^(1/Data.skewer);
-        ypred = yfitPLS.^(1/Data.skewer);
-
         c = abs(ytester - ypred);
         scatter(ytester, ypred, 50, c, '.'); 
         colorbar
@@ -50,7 +48,7 @@ function model_evaluation(Data, N_PLS, show_plots)
 
         % Residual plot
         figure()
-        scatter(Y_test, c, 50, c, '.');
+        scatter(ytester, c, 50, c, '.');
         ylabel("Residual")
         xlabel("True RUL testing value")
         
@@ -60,10 +58,10 @@ function model_evaluation(Data, N_PLS, show_plots)
     TSS = sum((Y_train - mean(Y_train)).^2);
 
     % Predicted Error Sum of Squares (PRESS)
-    PLS_press = sum((Y_test - yfitPLS).^2);
+    PLS_press = sum((ytester - ypred).^2);
 
     % Root Mean Squared Error (RMSE)
-    PLS_rmse = sqrt(PLS_press / length(Y_test));
+    PLS_rmse = sqrt(PLS_press / length(ytester));
 
     % Q²
     PLS_Q2 = 1 - PLS_press/TSS;
