@@ -43,7 +43,7 @@ function [Data, stopFlag] = remove_variables(Data, vipScore, betaPLS, VIP_th)
     [sorted_VIP, idx_VIP] = sort(vipScore);
     [sorted_B, idx_B] = sort(abs(betaPLS));
     lowVIP = sorted_VIP < VIP_th;
-    lowBeta = abs(betaPLS) < 1;
+    %lowBeta = abs(betaPLS) < 1;
     
     % Remove the variable with the lowest score
     if sorted_VIP(1) < VIP_th
@@ -51,14 +51,14 @@ function [Data, stopFlag] = remove_variables(Data, vipScore, betaPLS, VIP_th)
         Data.Xtrain(:, idx_VIP(1)) = [];
         Data.Xtest(:, idx_VIP(1)) = [];
         Data.varNames(idx_VIP(1)) = [];
-    elseif sorted_B(1) < 1.5
+    elseif sorted_B(1) < 1.5 && false % This is dangerous?
         disp("Removing variable '" + Data.varNames(idx_B(1))+ "' due to low regression coefficient")
         Data.Xtrain(:, idx_B(1)) = [];
         Data.Xtest(:, idx_B(1)) = [];
         Data.varNames(idx_B(1)) = [];
     end
     
-    stopFlag = sum(lowVIP) == 0 && sum(lowBeta) == 0;
+    stopFlag = sum(lowVIP) == 0;% && sum(lowBeta) == 0;
 end
 
 
@@ -85,6 +85,7 @@ function [vipScore, betas] = compute_VIP(X_train, Y_train, N_PLS, VIP_th, varNam
 
         % Plot PLS coefficients
         bar(betas);
+        %title(Data.caseName);
         legend("PLS Regression Coefficients");
         xticklabels(varNames);
         
@@ -95,6 +96,7 @@ function [vipScore, betas] = compute_VIP(X_train, Y_train, N_PLS, VIP_th, varNam
         subplot(1,2,2)
         scatter(1:length(vipScore),vipScore, 50, 'o', 'filled', MarkerFaceColor="#EDB120")
         hold on
+        %title(Data.caseName);
         scatter(find(goodVIP),vipScore(goodVIP),50, 'o', 'filled', MarkerFaceColor="#0072BD")
         scatter(find(badVIP),vipScore(badVIP),50, 'o', 'filled', MarkerFaceColor="#D95319")
         plot([1 length(vipScore)],[1 1],'--k')

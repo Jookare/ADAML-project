@@ -1,4 +1,4 @@
-function Data = data_pretreatment(engine_id)
+function Data = data_pretreatment(engine_id, skewRUL)
 % LOAD DATA - Loads and preprocesses data for the given engine id
     Data = struct();
 
@@ -8,7 +8,7 @@ function Data = data_pretreatment(engine_id)
     RUL = readmatrix("data/RUL_FD00" + num2str(engine_id) + ".txt");
 
     % Preprocess data
-    [Train_out, Test_out, Vars] = data_preprocess(Train, Test, RUL);
+    [Train_out, Test_out, Vars] = data_preprocess(Train, Test, RUL,skewRUL);
     
     % Store in struct
     Data.TrainUnits = Train_out(:,1);
@@ -21,12 +21,13 @@ function Data = data_pretreatment(engine_id)
     Data.Ytest = Test_out(:, 3);
     Data.Xtest = Test_out(:, 4:end);
 
-    Data.caseName = "FD\_00"+num2str(engine_id);
+    Data.caseName = strcat("FD\_00"+num2str(engine_id),", skewer=",num2str(skewRUL));
     Data.varNames = Vars;
+    Data.skewer = skewRUL;
 end
 
 
-function [Train, Test, Vars] = data_preprocess(Train, Test, RUL)
+function [Train, Test, Vars] = data_preprocess(Train, Test, RUL,skewRUL)
 %DATA_PREPROCESS - preprocesses input data
 %   This function takes in train and test data applies filtering and
 %   normalization.
@@ -50,8 +51,8 @@ function [Train, Test, Vars] = data_preprocess(Train, Test, RUL)
     
     
     % Computes the RUL for each measurement row
-    RUL_train = compute_RUL(Train);
-    RUL_test = compute_RUL(Test, RUL);
+    RUL_train = compute_RUL(Train,[],skewRUL,0);
+    RUL_test = compute_RUL(Test, RUL,skewRUL,1);
     
     % Add Unit and RUL to the array.
     Train_data = cat(2, Train(:,1), Train(:,2), RUL_train, X_train2);
@@ -89,7 +90,7 @@ function mask = create_mask(data)
 end
 
 
-function RUL_col = compute_RUL(data, RUL)
+function RUL_col = compute_RUL(data, RUL, skew, testing)
 % Creates the RUL for each measurement row. Can be given a vector that
 % includes the RULs so that is used as the last RUL instead
     
@@ -106,14 +107,14 @@ function RUL_col = compute_RUL(data, RUL)
         cycles = data(unit_idx, 2);
         
         % Calculate the RUL: max(cycles) - current cycle
-        if nargin == 2
+        if testing==1
             max_rul = RUL(i) + length(cycles);
             rul = max_rul - cycles;
         else
             rul = max(cycles) - cycles;
     
         end
-        
+        rul = rul.^skew;
         % Update the second column of train_data with RUL for this unit
         RUL_col = cat(1, RUL_col, rul);
     end
