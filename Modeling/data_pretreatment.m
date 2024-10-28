@@ -21,9 +21,18 @@ function Data = data_pretreatment(engine_id, skewRUL)
     Data.Ytest = Test_out(:, 3);
     Data.Xtest = Test_out(:, 4:end);
 
-    Data.caseName = strcat("FD\_00"+num2str(engine_id),", skewer=",num2str(skewRUL));
+    Data.caseName = strcat("FD\_00"+num2str(engine_id));
     Data.varNames = Vars;
     Data.skewer = skewRUL;
+
+    % Take moving average of the X datas
+    N_units = max( max(Data.TrainUnits), max(Data.TestUnits));
+    for i = 1:N_units
+        rows_train = (Data.TrainUnits == i);
+        rows_test = (Data.TestUnits == i);
+        Data.Xtrain(rows_train, :) = movmean(Data.Xtrain(rows_train, :), 7);
+        Data.Xtest(rows_test, :) = movmean(Data.Xtest(rows_test, :), 7);
+    end
 end
 
 

@@ -18,7 +18,7 @@ addpath(paths)
 % show_plots: true/false flag for showing plots
 % N_PLS: Number of LVs for PLS model
 
-engine_id = 2;
+engine_id = 4;
 k_cv = 5;
 show_plots = true;
 skewRUL = 1;% poorman's effort to skew all RUL-values nonlinearly (e.g., 0.5 => sqrt(x).
@@ -31,40 +31,43 @@ switch engine_id
         skewRUL = 0.3;
         kPLS_optimize = true;
     case 2
-        N_PLS = 5; 
-        VIP_th = 0.55;
+        N_PLS = 6; 
+        VIP_th = 0.6;
         skewRUL = 0.4;
         kPLS_optimize = true;
     case 3
         N_PLS = 4;
-        VIP_th = 0.8;
+        VIP_th = 0.6;
         skewRUL = 0.4;
         kPLS_optimize = true;%this is not that good for FD003 but let's test it at least.
     case 4
-        N_PLS = 5;
+        N_PLS = 8;
         VIP_th = 0.6;
         skewRUL = 1;
         kPLS_optimize = true;% use k-PLS for this tricky case.
 end
-% skewRUL = 1;
+skewRUL = 1;
 
 % Load data
 Data = data_pretreatment(engine_id, skewRUL);
 
 % Data_low contains all cycles that include less than cycle_th cycles and
 % data high the rest
-% cycle_th = 100;
+% cycle_th = 150;
 % [Data_low, Data_high] = split_data(Data, cycle_th);
-% Data = Data_low;
+% Data = Data_high;
 
 % Run model calibration
-model_calibration(Data, k_cv, 1);
+% model_calibration(Data, k_cv, 1);
 
 % Optimize model (Remove unnecessary variables)
 Data = model_optimization(Data, N_PLS, k_cv, show_plots, VIP_th);
 
+model_calibration(Data, k_cv, 1);
+
 % Evaluate with test data
 model_evaluation(Data, N_PLS, show_plots);
+
 
 
 %% Kernel PLS (initialized by: AK)
@@ -72,9 +75,6 @@ if (kPLS_optimize)
     show_plots = false;
     %Load data again without skew and make no images.
     Data = data_pretreatment(engine_id, 1);
-    cycle_th = 100;
-    [Data_low, Data_high] = split_data(Data, cycle_th);
-    Data = Data_low;
 
     % Run model calibration
     model_calibration(Data, k_cv, 0);
@@ -90,11 +90,11 @@ if (kPLS_optimize)
 
     model = {};
     model.datasetName = "NASA";
-    model.initialParam = -1 + 2*rand(1,2);
+    model.initialParam = -1 + 2*rand(1,10);
     model.nsamp        = 1;
-    model.learnRate    = 0.15;
+    model.learnRate    = 0.5;
     model.regrType     = 2; % 1 to be used in classification, 2 for regression, 3 PCR 
-    model.iter         = 100;
+    model.iter         = 150;
     model.center       = 1;
     model.params       = exp(model.initialParam);
     model.plot         = 1;
@@ -102,7 +102,7 @@ if (kPLS_optimize)
     
     % gaussian, matern1/2, matern3/2, matern5/2, cauchy
     kernels = ["gaussian", "matern1/2", "matern3/2", "matern5/2", "cauchy"];
-    model.kernelType   = "matern5/2";
+    model.kernelType   = "gaussian";
     model.classification = 0;
     model.momentum     = 2; % 1 works better with few parameters, 2 works better with many parameters
     model.family       = 0; 

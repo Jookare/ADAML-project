@@ -1,5 +1,5 @@
 % Train_model function
-function model_evaluation(Data, N_PLS, show_plots)
+function [PLS_Q2, PLS_rmse] = model_evaluation(Data, N_PLS, show_plots)
 
     % [X_train, mu, sigma] = zscore(Data.Xtrain);
     % 
@@ -37,7 +37,7 @@ function model_evaluation(Data, N_PLS, show_plots)
         xticklabels(Data.varNames);
         
         % RUL plot
-        figure()
+        figure(15); hold on
         c = abs(ytester - ypred);
         scatter(ytester, ypred, 50, c, '.'); 
         colorbar

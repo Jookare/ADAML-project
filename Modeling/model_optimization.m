@@ -43,7 +43,8 @@ function [Data, stopFlag] = remove_variables(Data, vipScore, betaPLS, VIP_th)
     [sorted_VIP, idx_VIP] = sort(vipScore);
     [sorted_B, idx_B] = sort(abs(betaPLS));
     lowVIP = sorted_VIP < VIP_th;
-    %lowBeta = abs(betaPLS) < 1;
+    % Set th as 1% of the maximum coefficient
+    beta_th = sorted_B(end)*0.01;
     
     % Remove the variable with the lowest score
     if sorted_VIP(1) < VIP_th
@@ -51,7 +52,7 @@ function [Data, stopFlag] = remove_variables(Data, vipScore, betaPLS, VIP_th)
         Data.Xtrain(:, idx_VIP(1)) = [];
         Data.Xtest(:, idx_VIP(1)) = [];
         Data.varNames(idx_VIP(1)) = [];
-    elseif sorted_B(1) < 1.5 && false % This is dangerous?
+    elseif sorted_B(1) < beta_th  % This is dangerous?
         disp("Removing variable '" + Data.varNames(idx_B(1))+ "' due to low regression coefficient")
         Data.Xtrain(:, idx_B(1)) = [];
         Data.Xtest(:, idx_B(1)) = [];

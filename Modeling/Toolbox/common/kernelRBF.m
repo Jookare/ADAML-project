@@ -27,10 +27,10 @@ if model.family == 1
     K5   = 1 ./ ( 1 + ( ND ./ model.params(5) ^ 2));
 
     % Family
-    K = model.params(6) .* K1 + model.params(7) .* K2 + model.params(8) .* K3 + ...
-       model.params(9) .* K4 + model.params(10) .* K5;
+    % K = model.params(6) .* K1 + model.params(7) .* K2 + model.params(8) .* K3 + ...
+    %    model.params(9) .* K4 + model.params(10) .* K5;
 
-    % K = K1 + K2 + K3 + K4 + K5;
+    K = K1 + K2 + K3 + K4 + K5;
 
 elseif model.family == -1
 
@@ -71,9 +71,11 @@ elseif model.family == -1
 
 else
     if strcmp(model.kernelType, "gaussian")
-
+        
+        
         ND = normDiff(model.X, model.X);
         K  = exp(-ND/(2*(model.params(1)^2)));
+        
 
     elseif strcmp(model.kernelType, "matern1/2")
         if isdlarray(model.X)

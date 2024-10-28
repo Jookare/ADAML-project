@@ -7,30 +7,30 @@ clearvars
 
 Data = {};
 for engine_id = 1:4
-    data = data_pretreatment(engine_id);
-    Data(engine_id).Train = data.Train;
-    Data(engine_id).Test = data.Test;
-    Data(engine_id).varNames = data.varNames;
+    data = data_pretreatment(engine_id, 1);
+    Data{engine_id} = data;
 end
 
 %% Visualize train and test data in 2 by 4 grid for easy comparison
 figure;
-types = {'Train', 'Test'};
 num_datasets = length(Data);
-num_types = length(types);
 
-for k = 1:length(types)
-    type = types{k};
-    for i = 1:4
-        subplot(num_types, num_datasets, (k-1)*num_datasets + i);
-        % figure
-        data = Data(i).(type);
-        vars = Data(i).varNames;
-    
-        % Do not take Unit and Time into account here
-        boxplot(data(:, 3:end), vars(3:end))
-        title(type+" FD00"+num2str(i)+" (normalized)")
-    end
+for i = 1:4
+    subplot(2, num_datasets, i);
+    % figure
+    data = Data{i}.Xtrain;
+    vars = Data{i}.varNames;
+
+    % Do not take Unit and Time into account here
+    boxplot(data, vars)
+    title("Train FD00"+num2str(i)+" (normalized)")
+
+    subplot(2, num_datasets, i + 4);
+    data = Data{i}.Xtest;
+
+    % Do not take Unit and Time into account here
+    boxplot(data, vars)
+    title("Test FD00"+num2str(i)+" (normalized)")
 end
 %% Plot same thing separately
 close all
@@ -38,8 +38,8 @@ type = 'Train';
 
 for i = 1:4
     figure
-    data = Data(i).(type);
-    vars = Data(i).varNames;
+    data = Data{i}.Xtrain;
+    vars = Data{i}.varNames;
         
     % Do not take Unit and Time into account here
     boxplot(data(:, 3:end), vars(3:end))
@@ -48,12 +48,12 @@ end
 %% Analyze the sensors with very low variance
 close all
 engine_id = 3;
-vars = Data(engine_id).varNames;
-data = Data(engine_id).(type);
-idx = vars == "Sensor 13";
+vars = Data{engine_id}.varNames;
+data = Data{engine_id}.Xtrain;
+idx = vars == "Sensor 7";
 
 figure; hold on
-unit_i = data(:,1) == 10;
+unit_i = Data{engine_id}.TrainUnits == 10;
 plot(data(unit_i, idx))
 
 %% Visualize raw data for report
@@ -67,10 +67,14 @@ data1 = zscore(data1);
 data2 = data2(data2(:,1) == 50, 1:end);
 data2 = zscore(data2);
 
+norm_data1 = movmean(data1, 7);
+norm_data2 = movmean(data2, 7);
+
 % plot few sensors
 for k = [1, 7, 9]
-    figure
+    figure; hold on
     plot(data1(:, k+5))
+    plot(norm_data1(:, k+5))
     if k == 1
         ylim([-1.5 2])
     elseif k == 9
@@ -79,17 +83,20 @@ for k = [1, 7, 9]
     xlabel("Time (cycles)")
     ylabel("measurement")
     xlim([0, 222])
-    figure
+    legend("Raw data", "Moving mean (7)", 'Location','northwest')
+
+    figure; hold on
     plot(data2(:, k+5))
+    plot(norm_data2(:, k+5))
     if k == 7
         ylim([-3 3])
     elseif k == 9
         ylim([-2 3.5])
-
     end
     xlabel("Time (cycles)")
     ylabel("measurement")
     xlim([0, 222])
+    legend("Raw data", "Moving mean (7)", 'Location','northwest')
 end
 
 %% Visualize (normalized) raw data
@@ -120,10 +127,51 @@ clearvars
 
 k_cv = 5;
 for engine_id = 1:4
-    Data = data_pretreatment(engine_id);
+    switch engine_id
+        case 1
+            N_PLS = 2;
+            VIP_th = 0.95;
+            skewRUL = 0.3;
+            kPLS_optimize = true;
+        case 2
+            N_PLS = 6; 
+            VIP_th = 0.6;
+            skewRUL = 0.4;
+            kPLS_optimize = true;
+        case 3
+            N_PLS = 3;
+            VIP_th = 0.6;
+            skewRUL = 0.4;
+            kPLS_optimize = true;%this is not that good for FD003 but let's test it at least.
+        case 4
+            N_PLS = 5;
+            VIP_th = 0.6;
+            skewRUL = 1;
+            kPLS_optimize = true;% use k-PLS for this tricky case.
+    end
+    Data = data_pretreatment(engine_id, 1);
+    Data = model_optimization(Data, N_PLS, k_cv, 0, VIP_th);
     
-    model_calibration(Data, k_cv, engine_id);
+    [Q2_CV_PLS, RMSE_CV_PLS] = model_calibration(Data, k_cv, 0);
+    
+    subplot(2,4, engine_id)
+    plot(Q2_CV_PLS)
+    xlabel("Latent Variables")
+    xticks([0 5 10 15])
+    title("FD00"+num2str(engine_id))
+    if engine_id == 1
+        ylabel("Q²_{CV}")
+    end
 
+    subplot(2,4, engine_id + 4)
+    plot(RMSE_CV_PLS)
+    xlabel("Latent Variables")
+    xticks([0 5 10 15])
+    % xticklabels({})
+
+    if engine_id == 1
+        ylabel("RMSE_{CV}")
+    end
 end
 % print('-dpdf','Test_plot.pdf','-bestfit','-r200')
 
